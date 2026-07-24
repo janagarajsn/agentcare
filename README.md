@@ -66,6 +66,7 @@ agentcare/
 │   ├── static/                    # css, js
 │   ├── requirements.txt
 │   └── .env.example
+├── requirements.txt                # union of backend + frontend deps, for a single shared venv
 └── README.md
 ```
 
@@ -81,11 +82,27 @@ Python modules — it only calls the backend's documented HTTP API.
   key still works: the pipeline's retry/error-handling path will mark the workflow `FAILED`
   gracefully instead of crashing.
 
+## Installing dependencies
+
+Backend and frontend each ship their own `requirements.txt` so either can be installed and
+deployed on its own. There's also a root [`requirements.txt`](requirements.txt) — the union of
+both — for a single shared virtual environment:
+
+```bash
+python3.12 -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+With that one venv activated, skip the per-service `pip install` step below and just `cd
+backend` / `cd frontend` to run each process — a venv is a shell-level activation, not tied to a
+directory.
+
 ## Backend setup
 
 ```bash
 cd backend
-python3.12 -m venv venv
+python3.12 -m venv venv           # skip this + the next 2 lines if you installed the root requirements.txt
 source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
@@ -104,7 +121,7 @@ In a second terminal:
 
 ```bash
 cd frontend
-python3.12 -m venv venv
+python3.12 -m venv venv           # skip this + the next 2 lines if you installed the root requirements.txt
 source venv/bin/activate
 pip install -r requirements.txt
 
