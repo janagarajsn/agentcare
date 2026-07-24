@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Submit a request — AgentCare{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Submit a request</h1>
+    <span class="subtitle">Describe what you need in your own words — the system will route it, book what it can, and flag anything that needs a human.</span>
+  </div>
+</div>
+
+{% if error %}
+<div class="flash flash-error">{{ error }}</div>
+{% endif %}
+
+<div class="card">
+  <form method="post" action="/patient/submit" enctype="multipart/form-data">
+    <div class="field">
+      <label for="request_text">Your request</label>
+      <textarea id="request_text" name="request_text" required
+        placeholder="e.g. I need a cardiology appointment next week. I also want to attach my previous ECG."></textarea>
+    </div>
+    <div class="field">
+      <label for="files">Attach documents (optional)</label>
+      <input type="file" id="files" name="files" multiple>
+      <div class="help-text">PDF, PNG, or JPEG. The system will classify and file each one automatically.</div>
+    </div>
+    <button type="submit" class="btn">Submit request</button>
+  </form>
+</div>
+
+{% if result %}
+{% set routing = result.workflow_run.state.get('routing_result') %}
+{% set has_content = result.appointment or result.documents or result.reminders or result.escalation %}
+<div class="card result-panel">
+  <h2>Result</h2>
+  <p>
+    Workflow #{{ result.workflow_run.id }} —
+    {% if result.workflow_run.status == 'completed' %}<span class="badge badge-success">Completed</span>
+    {% elif result.workflow_run.status == 'awaiting_escalation' %}<span class="badge badge-warning">Awaiting human review</span>
+    {% elif result.workflow_run.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+    {% else %}<span class="badge badge-neutral">{{ result.workflow_run.status }}</span>{% endif %}
+    <span class="text-muted">(last step: {{ result.workflow_run.current_step | replace('_', ' ') | title }})</span>
+  </p>
+
+  {% if result.workflow_run.status == 'failed' %}
+  <div class="flash flash-error">
+    Something went wrong while processing this request. Nothing was left half-done, but please try
+    rephrasing it or try again — if it keeps happening, contact staff.
+  </div>
+  {% endif %}
+
+  {% if result.escalation %}
+  <div class="flash flash-error">
+    This request was escalated for human review — reason:
+    <strong>{{ result.escalation.reason | replace('_', ' ') | title }}</strong>.
+    A staff member will follow up. (Escalation #{{ result.escalation.id }})
+  </div>
+  {% endif %}
+
+  {% if routing and routing.status == 'found' %}
+  <p class="text-muted">Routed to: <strong>{{ routing.department_name }}</strong></p>
+  {% endif %}
+
+  {% if result.appointment %}
+  <h3>Appointment</h3>
+  <p>
+    {{ result.appointment.doctor_name }} ({{ result.appointment.department_name }}) —
+    {{ result.appointment.slot_start_time[:16].replace('T', ' ') }}
+    {% if result.appointment.status in ('confirmed', 'rescheduled') %}<span class="badge badge-success">{{ result.appointment.status | title }}</span>
+    {% elif result.appointment.status == 'cancelled' %}<span class="badge badge-neutral">Cancelled</span>
+    {% else %}<span class="badge badge-warning">{{ result.appointment.status | title }}</span>{% endif %}
+  </p>
+  {% endif %}
+
+  {% if result.documents %}
+  <h3>Documents filed</h3>
+  <table>
+    <thead><tr><th>Filename</th><th>Type</th><th>Duplicate?</th></tr></thead>
+    <tbody>
+      {% for d in result.documents %}
+      <tr>
+        <td>{{ d.original_filename }}</td>
+        <td>{{ "ECG" if d.document_type == "ecg" else d.document_type | replace('_', ' ') | title }}</td>
+        <td>{% if d.is_duplicate %}<span class="badge badge-warning">Yes</span>{% else %}<span class="badge badge-neutral">No</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if result.reminders %}
+  <h3>Reminders scheduled</h3>
+  <table>
+    <thead><tr><th>Type</th><th>When</th></tr></thead>
+    <tbody>
+      {% for r in result.reminders %}
+      <tr><td>{{ r.reminder_type | replace('_', ' ') | title }}</td><td>{{ r.scheduled_at[:16].replace('T', ' ') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if not has_content and result.workflow_run.status == 'completed' %}
+  <p class="text-muted">No appointment, document, or reminder changes were needed for this request.</p>
+  {% endif %}
+
+  <details style="margin-top:1rem;">
+    <summary class="text-muted">View technical details (persisted workflow state)</summary>
+    <pre>{{ result.workflow_run.state | tojson(indent=2) }}</pre>
+  </details>
+</div>
+{% endif %}
+{% endblock %}

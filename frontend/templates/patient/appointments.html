@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Appointments — AgentCare{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Appointments</h1>
+</div>
+
+<div class="card">
+  <h2>Book a new appointment</h2>
+  <form method="post" action="/patient/appointments/book">
+    <div class="field">
+      <label for="department_id">Department</label>
+      <select id="department_id" class="dept-select" data-target="slot_id" name="department_id">
+        <option value="">Select a department…</option>
+        {% for dept in departments %}
+        <option value="{{ dept.id }}">{{ dept.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="slot_id">Available slot</label>
+      <select id="slot_id" name="slot_id" required>
+        <option value="">Select a department first…</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="reason">Reason (optional)</label>
+      <input type="text" id="reason" name="reason" placeholder="e.g. Follow-up check-up">
+    </div>
+    <button type="submit" class="btn">Book appointment</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Your appointments</h2>
+  {% if appointments %}
+  <table>
+    <thead><tr><th>Appointment time</th><th>Doctor</th><th>Department</th><th>Status</th><th>Reason</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td>{{ a.slot_start_time[:16].replace('T', ' ') }} – {{ a.slot_end_time[11:16] }}</td>
+        <td>{{ a.doctor_name }}</td>
+        <td>{{ a.department_name }}</td>
+        <td>
+          {% if a.status == 'confirmed' %}<span class="badge badge-success">Confirmed</span>
+          {% elif a.status == 'rescheduled' %}<span class="badge badge-success">Rescheduled</span>
+          {% elif a.status == 'cancelled' %}<span class="badge badge-neutral">Cancelled</span>
+          {% elif a.status == 'completed' %}<span class="badge badge-neutral">Completed</span>
+          {% else %}<span class="badge badge-warning">{{ a.status }}</span>{% endif %}
+        </td>
+        <td>{{ a.reason or "—" }}</td>
+        <td>
+          {% if a.status in ('confirmed', 'pending', 'rescheduled') %}
+          <div class="actions-row">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('reschedule-{{ a.id }}').classList.toggle('hidden-form')">Reschedule</button>
+            <form method="post" action="/patient/appointments/{{ a.id }}/cancel" data-confirm="Cancel this appointment?">
+              <button type="submit" class="btn btn-secondary btn-sm">Cancel</button>
+            </form>
+          </div>
+          <form id="reschedule-{{ a.id }}" method="post" action="/patient/appointments/{{ a.id }}/reschedule" class="hidden-form" style="margin-top:0.6rem; min-width:220px;">
+            <div class="field">
+              <select class="dept-select" data-target="reschedule-slot-{{ a.id }}">
+                <option value="">Select a department…</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}">{{ dept.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <select id="reschedule-slot-{{ a.id }}" name="new_slot_id" required>
+                <option value="">Select a department first…</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-sm">Confirm reschedule</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No appointments yet.</p>
+  {% endif %}
+</div>
+
+<style>.hidden-form { display: none; }</style>
+<script>
+document.addEventListener("change", async (event) => {
+  if (!event.target.classList.contains("dept-select")) return;
+  const deptId = event.target.value;
+  const slotSelect = document.getElementById(event.target.dataset.target);
+  if (!deptId) {
+    slotSelect.innerHTML = '<option value="">Select a department first…</option>';
+    return;
+  }
+  slotSelect.innerHTML = '<option value="">Loading…</option>';
+  const response = await fetch(`/patient/appointments/slots?department_id=${deptId}`);
+  slotSelect.innerHTML = await response.text();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Staff Dashboard — AgentCare{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Staff dashboard</h1>
+    <span class="subtitle">Workflow and escalation overview.</span>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Total requests</h2>
+    <p style="font-size:1.8rem; margin:0;">{{ total_workflows }}</p>
+    <a href="/staff/requests">View all requests &rarr;</a>
+  </div>
+  <div class="card">
+    <h2>Open escalations</h2>
+    <p style="font-size:1.8rem; margin:0;">{{ open_escalation_count }}</p>
+    <a href="/staff/escalations">Review escalations &rarr;</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Requests by status</h2>
+  {% if status_counts %}
+  <div class="actions-row">
+    {% for status_name, count in status_counts.items() %}
+    <span class="badge badge-neutral">{{ status_name }}: {{ count }}</span>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-state">No requests yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recent requests</h2>
+  {% if recent_workflows %}
+  <table>
+    <thead><tr><th>Submitted</th><th>Patient</th><th>Request</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for w in recent_workflows %}
+      <tr>
+        <td>{{ w.created_at[:16].replace('T', ' ') }}</td>
+        <td>#{{ w.patient_id }}</td>
+        <td>{{ w.request_text[:50] }}{% if w.request_text|length > 50 %}…{% endif %}</td>
+        <td>
+          {% if w.status == 'completed' %}<span class="badge badge-success">Completed</span>
+          {% elif w.status == 'awaiting_escalation' %}<span class="badge badge-warning">Awaiting review</span>
+          {% elif w.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+          {% else %}<span class="badge badge-neutral">{{ w.status }}</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No requests yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

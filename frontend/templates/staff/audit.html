@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Audit log — AgentCare{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Audit log</h1>
+</div>
+
+<div class="card">
+  {% if events %}
+  <table>
+    <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Metadata</th></tr></thead>
+    <tbody>
+      {% for e in events %}
+      <tr>
+        <td>{{ e.created_at[:19].replace('T', ' ') }}</td>
+        <td>{{ e.actor_role }}{{ " #" ~ e.actor_id if e.actor_id else "" }}</td>
+        <td>{{ e.action }}</td>
+        <td>{{ e.entity_type }}{{ " #" ~ e.entity_id if e.entity_id else "" }}</td>
+        <td><code style="font-size:0.75rem;">{{ e.event_metadata | tojson }}</code></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No audit events yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

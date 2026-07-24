@@ -1,0 +1,40 @@
+# Environments
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+env/
+*.egg-info/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+backend/agentcare.db
+
+# Uploaded documents / storage (never commit patient data)
+backend/storage/documents/*
+!backend/storage/documents/.gitkeep
+
+# Logs
+*.log
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Node (frontend static tooling, if any)
+node_modules/
+
+.claude/

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — AgentCare{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Welcome back, {{ user.name }}</h1>
+    <span class="subtitle">Here's where things stand.</span>
+  </div>
+  <a href="/patient/submit" class="btn">Submit a request</a>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Upcoming appointments</h2>
+    <p style="font-size:1.8rem; margin:0;">{{ appointment_count }}</p>
+    {% if next_appointment %}
+    <p class="text-muted" style="margin:0.25rem 0 0.5rem 0;">
+      Next: {{ next_appointment.doctor_name }} ({{ next_appointment.department_name }}) —
+      {{ next_appointment.slot_start_time[:16].replace('T', ' ') }}
+    </p>
+    {% endif %}
+    <a href="/patient/appointments">View appointments &rarr;</a>
+  </div>
+  <div class="card">
+    <h2>Documents on file</h2>
+    <p style="font-size:1.8rem; margin:0;">{{ document_count }}</p>
+    <a href="/patient/documents">View documents &rarr;</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Reminders &amp; follow-ups</h2>
+  <p style="font-size:1.8rem; margin:0 0 0.5rem 0;">{{ reminder_count }}</p>
+  <a href="/patient/reminders">View reminders &rarr;</a>
+</div>
+
+<div class="card">
+  <h2>Recent requests</h2>
+  {% if recent_workflows %}
+  <table>
+    <thead>
+      <tr><th>Submitted</th><th>Request</th><th>Step</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for w in recent_workflows %}
+      <tr>
+        <td>{{ w.created_at[:16].replace('T', ' ') }}</td>
+        <td>{{ w.request_text[:60] }}{% if w.request_text|length > 60 %}…{% endif %}</td>
+        <td>{{ w.current_step }}</td>
+        <td>
+          {% if w.status == 'completed' %}<span class="badge badge-success">Completed</span>
+          {% elif w.status == 'awaiting_escalation' %}<span class="badge badge-warning">Awaiting review</span>
+          {% elif w.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+          {% else %}<span class="badge badge-neutral">{{ w.status }}</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No requests submitted yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

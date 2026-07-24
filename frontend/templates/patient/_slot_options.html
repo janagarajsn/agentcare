@@ -1,0 +1,6 @@
+<option value="">Select a slot…</option>
+{% for slot in slots %}
+<option value="{{ slot.slot_id }}">{{ slot.start_time[:16].replace('T', ' ') }} (doctor #{{ slot.doctor_id }})</option>
+{% else %}
+<option value="" disabled>No open slots for this department</option>
+{% endfor %}

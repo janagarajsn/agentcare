@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Log in — AgentCare{% endblock %}
+{% block content %}
+<div class="auth-shell">
+  <div class="card">
+    <h1>AgentCare</h1>
+    <span class="subtitle text-muted">Patient administration &amp; care coordination</span>
+
+    {% if error %}
+      <div class="flash flash-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/login">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <button type="submit" class="btn" style="width:100%">Log in</button>
+    </form>
+
+    <p class="help-text" style="margin-top:1rem; text-align:center;">
+      New patient? <a href="/register">Create an account</a>
+    </p>
+
+    <div class="demo-note">
+      Demo accounts (seeded, local dev only): patient1@agentcare.example / Patient123!,
+      staff1@agentcare.example / Staff123!, admin1@agentcare.example / Admin123!
+    </div>
+  </div>
+</div>
+{% endblock %}

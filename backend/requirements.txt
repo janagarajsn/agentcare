@@ -1,0 +1,33 @@
+# Web framework
+fastapi>=0.133
+uvicorn[standard]>=0.34
+
+# Validation / settings
+pydantic>=2.10
+pydantic-settings>=2.7
+email-validator>=2.2
+
+# ORM / migrations
+SQLAlchemy>=2.0.36
+alembic>=1.14
+
+# Auth
+python-jose[cryptography]>=3.3
+# passlib 1.7.4 is unmaintained and breaks with bcrypt>=4.1 (missing __about__); pin bcrypt<4.1
+passlib[bcrypt]>=1.7.4
+bcrypt==4.0.1
+
+# File upload support
+python-multipart>=0.0.20
+
+# Agent framework / LLM
+google-adk==2.5.0
+litellm>=1.55
+
+# Testing
+pytest>=8.3
+pytest-asyncio>=0.25
+httpx>=0.28
+
+# Utilities
+python-dotenv>=1.0

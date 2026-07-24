@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Documents — AgentCare{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Documents</h1>
+</div>
+
+<div class="card">
+  <h2>Upload a document</h2>
+  <form method="post" action="/patient/documents/upload" enctype="multipart/form-data">
+    <div class="field">
+      <label for="document_type">Document type</label>
+      <select id="document_type" name="document_type" required>
+        <option value="ecg">ECG</option>
+        <option value="blood_report">Blood report</option>
+        <option value="imaging">Imaging (X-ray / MRI / scan)</option>
+        <option value="prescription_history">Prescription history</option>
+        <option value="discharge_summary">Discharge summary</option>
+        <option value="identity_proof">Identity proof</option>
+        <option value="insurance_card">Insurance card</option>
+        <option value="referral_letter">Referral letter</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="appointment_id">Link to appointment (optional)</label>
+      <select id="appointment_id" name="appointment_id">
+        <option value="">Not linked to a specific appointment</option>
+        {% for a in appointments %}
+        <option value="{{ a.id }}">Appointment #{{ a.id }} — doctor #{{ a.doctor_id }} ({{ a.status }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="file">File</label>
+      <input type="file" id="file" name="file" required accept=".pdf,.png,.jpg,.jpeg">
+    </div>
+    <button type="submit" class="btn">Upload</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Your documents</h2>
+  {% if documents %}
+  <table>
+    <thead><tr><th>Uploaded</th><th>Filename</th><th>Type</th><th>Appointment</th><th>Duplicate?</th></tr></thead>
+    <tbody>
+      {% for d in documents %}
+      <tr>
+        <td>{{ d.created_at[:16].replace('T', ' ') }}</td>
+        <td>{{ d.original_filename }}</td>
+        <td>{{ "ECG" if d.document_type == "ecg" else d.document_type | replace('_', ' ') | title }}</td>
+        <td>{{ "#" ~ d.appointment_id if d.appointment_id else "—" }}</td>
+        <td>{% if d.is_duplicate %}<span class="badge badge-warning">Duplicate</span>{% else %}<span class="badge badge-success">Unique</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No documents uploaded yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

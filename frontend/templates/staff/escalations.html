@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Escalations — AgentCare{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Escalation review</h1>
+</div>
+
+<div class="card">
+  {% if escalations %}
+  <table>
+    <thead><tr><th>Raised</th><th>Reason</th><th>Detail</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for e in escalations %}
+      <tr>
+        <td>{{ e.created_at[:16].replace('T', ' ') }}</td>
+        <td><span class="badge badge-warning">{{ e.reason.replace('_', ' ') }}</span></td>
+        <td style="max-width:320px;">{{ e.detail or "—" }}</td>
+        <td>
+          {% if e.status == 'open' %}<span class="badge badge-warning">Open</span>
+          {% elif e.status == 'approved' %}<span class="badge badge-success">Approved</span>
+          {% elif e.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+          {% else %}<span class="badge badge-neutral">{{ e.status }}</span>{% endif %}
+        </td>
+        <td>
+          {% if e.status in ('open', 'in_review') %}
+          <form method="post" action="/staff/escalations/{{ e.id }}/resolve" class="actions-row" style="align-items:center;">
+            <input type="text" name="note" placeholder="Review note" style="max-width:160px;">
+            <button type="submit" name="decision" value="approved" class="btn btn-sm">Approve</button>
+            <button type="submit" name="decision" value="rejected" class="btn btn-danger btn-sm">Reject</button>
+          </form>
+          {% else %}
+          <span class="text-muted">Reviewed{{ " by staff #" ~ e.reviewed_by if e.reviewed_by else "" }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No escalations.</p>
+  {% endif %}
+</div>
+{% endblock %}

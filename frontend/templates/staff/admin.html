@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Admin — AgentCare{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Department / doctor / slot admin</h1>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Departments</h2>
+    {% if user.role == 'admin' %}
+    <form method="post" action="/staff/admin/departments">
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="field">
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description">
+      </div>
+      <button type="submit" class="btn btn-sm">Add department</button>
+    </form>
+    {% else %}
+    <p class="help-text">Only admins can add departments.</p>
+    {% endif %}
+    <table style="margin-top:1rem;">
+      <thead><tr><th>ID</th><th>Name</th><th>Active</th></tr></thead>
+      <tbody>
+        {% for d in departments %}
+        <tr><td>{{ d.id }}</td><td>{{ d.name }}</td><td>{{ "Yes" if d.active else "No" }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Doctors</h2>
+    {% if user.role == 'admin' %}
+    <form method="post" action="/staff/admin/doctors">
+      <div class="field">
+        <label for="department_id">Department</label>
+        <select id="department_id" name="department_id" required>
+          {% for d in departments %}
+          <option value="{{ d.id }}">{{ d.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="doctor_name">Name</label>
+        <input type="text" id="doctor_name" name="name" required placeholder="Dr. Jane Doe">
+      </div>
+      <button type="submit" class="btn btn-sm">Add doctor</button>
+    </form>
+    {% else %}
+    <p class="help-text">Only admins can add doctors.</p>
+    {% endif %}
+    <table style="margin-top:1rem;">
+      <thead><tr><th>ID</th><th>Name</th><th>Department</th></tr></thead>
+      <tbody>
+        {% for dept in departments %}
+          {% for doc in doctors_by_dept.get(dept.id, []) %}
+          <tr><td>{{ doc.id }}</td><td>{{ doc.name }}</td><td>{{ dept.name }}</td></tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Appointment slots</h2>
+  <form method="post" action="/staff/admin/slots" class="actions-row" style="align-items:flex-end;">
+    <div class="field mb-0">
+      <label for="slot_doctor_id">Doctor</label>
+      <select id="slot_doctor_id" name="doctor_id" required>
+        {% for doc in doctors %}
+        <option value="{{ doc.id }}">{{ doc.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field mb-0">
+      <label for="start_time">Start</label>
+      <input type="datetime-local" id="start_time" name="start_time" required>
+    </div>
+    <div class="field mb-0">
+      <label for="end_time">End</label>
+      <input type="datetime-local" id="end_time" name="end_time" required>
+    </div>
+    <button type="submit" class="btn btn-sm">Add slot</button>
+  </form>
+
+  <table style="margin-top:1rem;">
+    <thead><tr><th>ID</th><th>Doctor</th><th>Start</th><th>End</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for s in slots %}
+      <tr>
+        <td>{{ s.id }}</td>
+        <td>#{{ s.doctor_id }}</td>
+        <td>{{ s.start_time[:16].replace('T', ' ') }}</td>
+        <td>{{ s.end_time[:16].replace('T', ' ') }}</td>
+        <td><span class="badge badge-neutral">{{ s.status }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="help-text">Showing up to 50 upcoming open slots.</p>
+</div>
+{% endblock %}

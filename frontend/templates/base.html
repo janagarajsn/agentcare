@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}AgentCare{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <a href="/" class="brand">AgentCare</a>
+    <nav>
+      {% if user %}
+        {% if user.role == 'patient' %}
+          <a href="/patient/dashboard" class="{{ 'active' if active_nav == 'dashboard' else '' }}">Dashboard</a>
+          <a href="/patient/submit" class="{{ 'active' if active_nav == 'submit' else '' }}">Submit Request</a>
+          <a href="/patient/appointments" class="{{ 'active' if active_nav == 'appointments' else '' }}">Appointments</a>
+          <a href="/patient/documents" class="{{ 'active' if active_nav == 'documents' else '' }}">Documents</a>
+          <a href="/patient/reminders" class="{{ 'active' if active_nav == 'reminders' else '' }}">Reminders</a>
+        {% else %}
+          <a href="/staff/dashboard" class="{{ 'active' if active_nav == 'dashboard' else '' }}">Dashboard</a>
+          <a href="/staff/requests" class="{{ 'active' if active_nav == 'requests' else '' }}">Requests</a>
+          <a href="/staff/escalations" class="{{ 'active' if active_nav == 'escalations' else '' }}">Escalations</a>
+          <a href="/staff/admin" class="{{ 'active' if active_nav == 'admin' else '' }}">Admin</a>
+          <a href="/staff/audit" class="{{ 'active' if active_nav == 'audit' else '' }}">Audit Log</a>
+        {% endif %}
+        <span class="text-muted">{{ user.name }} ({{ user.role }})</span>
+        <a href="/logout">Logout</a>
+      {% endif %}
+    </nav>
+  </div>
+  <div class="container">
+    {% if flash_message %}
+      <div class="flash flash-{{ 'error' if flash_type == 'error' else 'success' }}">{{ flash_message }}</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
