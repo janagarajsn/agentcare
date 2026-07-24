@@ -67,6 +67,7 @@ agentcare/
 │   ├── requirements.txt
 │   └── .env.example
 ├── requirements.txt                # union of backend + frontend deps, for a single shared venv
+├── .env.example                    # combined reference of every env var (see note below)
 └── README.md
 ```
 
@@ -175,6 +176,12 @@ Staff can view/manage everything; only `admin` can create departments/doctors/st
 
 Neither `.env` file is committed — only the `.env.example` templates are, with placeholder
 values. No real credentials or patient data are ever checked in.
+
+There's also a root [`.env.example`](.env.example) that combines both, purely as a single-place
+reference — it is **not** read automatically by either process. `backend/app/config.py` loads
+`backend/.env` and the frontend loads `frontend/.env`, each relative to its own process, not the
+repo root. Still create both `backend/.env` and `frontend/.env` (from their own `.env.example`,
+or by copying the relevant section out of the root one).
 
 ## Running tests
 
